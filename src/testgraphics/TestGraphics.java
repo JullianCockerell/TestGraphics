@@ -44,46 +44,66 @@ public class TestGraphics {
           if(shots[i] > shotMax){shotMax = shots[i];}
       }
       
-      int gap = (int)((width - 40.0) / (mapSize + 1));
-      
       BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-      Graphics2D ig2 = bi.createGraphics();
-
-      Font font = new Font("TimesRoman", Font.BOLD, 20);
-      ig2.setFont(font);
-      String message = "Shots per Game";
-      FontMetrics fontMetrics = ig2.getFontMetrics();
-      int stringWidth = fontMetrics.stringWidth(message);
-      int stringHeight = fontMetrics.getAscent();
-      ig2.setPaint(Color.BLACK);
-      ig2.drawRect(0, 0, width, height);
-      ig2.drawString(message, (width - stringWidth) / 2, height / 2 + stringHeight / 4 - 130);
-      ig2.drawRect(20, 30, width - 40, height - 50);
-      int oldX = 0, oldY = 0;
-      //draw shot dots
-      int xLevel = 20 + gap;
-      for(int i = 0; i < mapSize; i++)
-      {
-          double shotMaxDouble = (double) shotMax;
-          int yLevel = (int) (shots[i]/shotMaxDouble)*(height - 50);
-          double testY = (shots[i]/shotMaxDouble)*(height - 50);
-          int testY2 = testY.intValue();
- 
-         ig2.fillOval(xLevel - 5, yLevel - 5, 10, 10);
-          xLevel = xLevel + gap;
-          if(i > 0)
-          {
-              ig2.drawLine(oldX, oldY, xLevel, yLevel);
-          }
-          oldX = xLevel;
-          oldY = yLevel;
-      }
-
-      ImageIO.write(bi, "PNG", new File("testpic.PNG"));
+      Graphics2D shotGraph = bi.createGraphics();
+      shotGraph = drawGraph(shots, shotGraph, height, width, mapSize, shotMax);
+      ImageIO.write(bi, "PNG", new File("ShotGraph.PNG"));
 
     } catch (IOException ie) {
       ie.printStackTrace();
     }
 
+  }
+  
+  static int convertCo(int yLevel, int height)
+  {
+      return height - (20 + yLevel);
+  }
+  
+  static Graphics2D drawGraph(int array[], Graphics2D win, int height, int width, int mapSize, int maxVal)
+  {
+      int gap = (int)((width - 40.0) / (mapSize + 1));
+      win.setPaint(Color.WHITE);
+      win.fillRect(0, 0, width, height);
+      Font titleFont = new Font("TimesRoman", Font.BOLD, 20);
+      win.setFont(titleFont);
+      String message = "Shots per Game";
+      FontMetrics fontMetrics = win.getFontMetrics();
+      int stringWidth = fontMetrics.stringWidth(message);
+      int stringHeight = fontMetrics.getAscent();
+      win.setPaint(Color.BLACK);
+      win.drawRect(0, 0, width - 1, height - 1);
+      win.drawString(message, (width - stringWidth) / 2, height / 2 + stringHeight / 4 - 130);
+      win.drawRect(20, 30, width - 40, height - 50);
+      int oldX = 0, oldY = 0;
+      int xLevel = 20 + gap;
+      Font numFont = new Font("TimesRoman", Font.PLAIN, 10);
+      win.setFont(numFont);
+      
+      //converts shot count and draws dots and lines
+      for(int i = 0; i < mapSize; i++)
+      {
+          double shotMaxDouble = (double) maxVal;
+          int yLevel = (int) ((array[i]/shotMaxDouble)*(height - 70));
+          yLevel = convertCo(yLevel, height);
+          win.setPaint(Color.DARK_GRAY);
+          win.drawLine(20, yLevel, width - 20, yLevel);
+          String num = "" + array[i];
+          win.drawString(num, 10, yLevel);
+          win.setPaint(Color.BLACK);
+          win.fillOval(xLevel - 5, yLevel - 5, 10, 10);
+          if(i > 0)
+          {
+              win.drawLine(oldX, oldY, xLevel, yLevel);
+          }
+          if(i == mapSize - 1)
+          {
+              win.drawLine(20, height - 20, width - 20, height - 20);
+          }
+          oldX = xLevel;
+          oldY = yLevel;
+          xLevel = xLevel + gap;
+      }
+      return win;
   }
 }
